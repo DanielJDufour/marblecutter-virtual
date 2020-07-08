@@ -11,14 +11,15 @@ from rasterio.enums import Resampling
 
 LOG = logging.getLogger(__name__)
 
-
 class VirtualCatalog(Catalog):
     _rgb = None
     _nodata = None
     _linear_stretch = None
     _resample = None
+    _expr = None
 
-    def __init__(self, uri, rgb=None, nodata=None, linear_stretch=None, resample=None):
+    def __init__(self, uri, rgb=None, nodata=None, linear_stretch=None, resample=None, expr=None, bounds=None):
+        LOG.info('initializing catalog: {}'.format(uri))
         self._uri = uri
 
         if rgb:
@@ -39,11 +40,19 @@ class VirtualCatalog(Catalog):
 
         self._meta = {}
 
+        if bounds:
+            self._bounds = bounds
+
         with get_source(self._uri) as src:
-            self._bounds = warp.transform_bounds(src.crs, WGS84_CRS, *src.bounds)
+            print("src.crs:", [src.crs])
+            print("src.bounds:", [src.bounds])
+            if not self._bounds:
+                self._bounds = warp.transform_bounds(src.crs, WGS84_CRS, *src.bounds)
+    
             self._resolution = get_resolution_in_meters(
                 Bounds(src.bounds, src.crs), (src.height, src.width)
             )
+    
             approximate_zoom = get_zoom(max(self._resolution), op=math.ceil)
 
             global_min = src.get_tag_item("TIFFTAG_MINSAMPLEVALUE")

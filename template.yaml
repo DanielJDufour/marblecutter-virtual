@@ -52,7 +52,7 @@ Resources:
           GDAL_HTTP_VERSION: 2
           VSI_CACHE: TRUE
           VSI_CACHE_SIZE: 500000000
-      Timeout: 15
+      Timeout: 60
       MemorySize: 1536
       Events:
         # API Gateway routes
